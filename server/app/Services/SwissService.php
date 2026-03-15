@@ -9,30 +9,36 @@ class SwissService
 {
     public function calculate($tournamentId)
     {
-        $players = TournamentPlayer::where('tournament_id', $tournamentId)->get();
+        $players = TournamentPlayer::where('tournament_id', $tournamentId)->get()->keyBy('player_id');
 
         $matches = MatchResult::where('tournament_id', $tournamentId)
             ->where('stage', 'swiss')
+            ->whereNotNull('winner_id')
             ->get();
 
-        // Step 1: calculate wins and losses
-        foreach ($players as $player) {
+        $wins = [];
+        $played = [];
 
-            $wins = $matches->where('winner_id', $player->player_id)->count();
+        // Step 1: calculate wins and matches played
+        foreach ($matches as $match) {
 
-            $played = $matches->filter(function ($match) use ($player) {
-                return $match->player1_id == $player->player_id ||
-                    $match->player2_id == $player->player_id;
-            })->count();
+            $wins[$match->winner_id] = ($wins[$match->winner_id] ?? 0) + 1;
 
-            $losses = $played - $wins;
-
-            $player->swiss_wins = $wins;
-            $player->swiss_losses = $losses;
-            $player->save();
+            $played[$match->player1_id] = ($played[$match->player1_id] ?? 0) + 1;
+            $played[$match->player2_id] = ($played[$match->player2_id] ?? 0) + 1;
         }
 
-        // Step 2: calculate buchholz
+        // Apply win/loss stats
+        foreach ($players as $player) {
+
+            $playerWins = $wins[$player->player_id] ?? 0;
+            $playerPlayed = $played[$player->player_id] ?? 0;
+
+            $player->swiss_wins = $playerWins;
+            $player->swiss_losses = $playerPlayed - $playerWins;
+        }
+
+        // Step 2: calculate Buchholz
         foreach ($players as $player) {
 
             $playerMatches = $matches->filter(function ($match) use ($player) {
@@ -48,22 +54,18 @@ class SwissService
                     ? $match->player2_id
                     : $match->player1_id;
 
-                $opponent = $players->firstWhere('player_id', $opponentId);
-
-                if ($opponent) {
-                    $buchholz += $opponent->swiss_wins;
+                if ($opponentId && isset($players[$opponentId])) {
+                    $buchholz += $players[$opponentId]->swiss_wins ?? 0;
                 }
             }
 
             $player->buchholz_score = $buchholz;
-            $player->save();
         }
 
         // Step 3: ranking
-        $ranked = TournamentPlayer::where('tournament_id', $tournamentId)
-            ->orderByDesc('swiss_wins')
-            ->orderByDesc('buchholz_score')
-            ->get();
+        $ranked = $players->sortByDesc('buchholz_score')
+            ->sortByDesc('swiss_wins')
+            ->values();
 
         $rank = 1;
 

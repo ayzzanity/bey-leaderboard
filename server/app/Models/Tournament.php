@@ -11,6 +11,7 @@ class Tournament extends Model
         'name',
         'challonge_id',
         'challonge_url',
+        'challonge_slug',
         'date',
         'participants_count'
     ];

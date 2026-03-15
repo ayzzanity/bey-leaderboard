@@ -38,12 +38,14 @@ class TournamentImportController extends Controller
 
         // 3️⃣ Check if already imported by slug or url
         $existingTournament = Tournament::where('challonge_url', $url)
+            ->orWhere('challonge_slug', $slug)
             ->first();
 
         if ($existingTournament) {
             return response()->json([
                 'message' => 'This tournament has already been imported.',
-                'tournament_id' => $existingTournament->id
+                'tournament_id' => $existingTournament->id,
+                'tournament_name' => $existingTournament->name
             ], 409);
         }
 
@@ -63,8 +65,8 @@ class TournamentImportController extends Controller
                 'name' => $tournamentData['tournament']['name'],
                 'challonge_id' => $tournamentData['tournament']['id'],
                 'challonge_url' => $url,
+                'challonge_slug' => $slug,
                 'date' => date('Y-m-d', strtotime($tournamentData['tournament']['started_at'])),
-                // 'date' => $tournamentData['tournament']['started_at'],
                 'participants_count' => count($participantsData)
             ]);
 
@@ -119,7 +121,7 @@ class TournamentImportController extends Controller
                     'player2_id' => $playerMap[$player2ParticipantId] ?? null,
                     'winner_id' => $playerMap[$winnerParticipantId] ?? null,
                     'round' => $match['round'],
-                    'stage' => $match['group_id'] !== null ? 'swiss' : 'topcut'
+                    'stage' => $match['group_id'] !== null ? 'swiss' : 'single_elim'
                 ]);
             }
 
@@ -129,7 +131,8 @@ class TournamentImportController extends Controller
 
             return response()->json([
                 'message' => 'Tournament imported successfully',
-                'tournament_id' => $tournament->id
+                'tournament_id' => $tournament->id,
+                'tournament_name' => $tournament->name
             ]);
         } catch (\Exception $e) {
 
