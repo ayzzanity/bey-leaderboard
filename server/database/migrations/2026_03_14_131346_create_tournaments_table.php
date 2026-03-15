@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('tournaments', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('challonge_id');
+            $table->string('challonge_id')->unique();
             $table->string('challonge_url');
+            $table->string('challonge_slug');
             $table->date('date');
             $table->integer('participants_count');
             $table->timestamps();
