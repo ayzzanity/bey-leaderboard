@@ -1,7 +1,4 @@
 import axios from 'axios';
-import type { Player } from '../types/Player';
-import type { Standing } from '../types/Standing';
-import type { Tournament } from '../types/Tournament';
 
 const api = axios.create({
   baseURL: 'http://localhost:8000/api',
@@ -10,17 +7,17 @@ const api = axios.create({
   }
 });
 
-export const getLeaderboard = async (): Promise<Player[]> => {
+export const getLeaderboard = async () => {
   const res = await api.get('/leaderboard');
   return res.data;
 };
 
-export const getTournaments = async (): Promise<Tournament[]> => {
+export const getTournaments = async () => {
   const res = await api.get('/tournaments');
   return res.data;
 };
 
-export const getStandings = async (id: number): Promise<Standing[]> => {
+export const getStandings = async (id) => {
   const res = await api.get(`/tournaments/${id}`);
   return res.data.players;
 };

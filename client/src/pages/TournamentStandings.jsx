@@ -1,22 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import type { Standing } from '../types/Standing';
 import { getStandings } from '../api/api';
 
-import StandingsTable from '../components/StandingsTable';
+import { StandingsTable } from '../components';
 
 export default function TournamentStandings() {
   const { id } = useParams();
 
-  const [standings, setStandings] = useState<Standing[]>([]);
+  const [standings, setStandings] = useState([]);
 
   useEffect(() => {
     if (id) loadStandings(parseInt(id));
   }, [id]);
 
-  const loadStandings = async (tournamentId: number) => {
+  const loadStandings = async (tournamentId) => {
     const data = await getStandings(tournamentId);
+    console.log(data);
     setStandings(data);
   };
 

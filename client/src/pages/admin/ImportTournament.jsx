@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { importTournament } from '../../api/importApi';
 import { useNavigate } from 'react-router-dom';
+import { Button, Input, Space } from 'antd';
+
+import { importTournament } from '../../api/importApi';
 
 export default function ImportTournament() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState();
+  const [error, setError] = useState();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setLoading(true);
@@ -24,7 +26,7 @@ export default function ImportTournament() {
 
       setUrl('');
       navigate(`/tournaments/${res.tournament_id}`);
-    } catch (err: any) {
+    } catch (err) {
       if (err.response) {
         if (err.response.status === 409) {
           setError(err.response.data.message);
@@ -45,18 +47,16 @@ export default function ImportTournament() {
     <div className="container">
       <h1>Import Challonge Tournament</h1>
 
-      <form onSubmit={handleSubmit} className="import-form">
-        <input
-          type="text"
+      <form onSubmit={handleSubmit} className="flex gap-2 mx-auto max-w-md">
+        <Input
           placeholder="https://challonge.com/your_tournament"
+          variant="filled"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          required
         />
-
-        <button type="submit" disabled={loading}>
+        <Button htmlType="submit" type="primary" loading={loading} disabled={loading}>
           {loading ? 'Importing...' : 'Import Tournament'}
-        </button>
+        </Button>
       </form>
 
       {message && <div className="success">{message}</div>}

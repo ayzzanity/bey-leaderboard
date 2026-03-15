@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { Player } from '../types/Player';
 import { getLeaderboard } from '../api/api';
 
-import LeaderboardTable from '../components/LeaderboardTable';
+import { LeaderboardTable } from '../components';
 
 export default function Leaderboard() {
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [players, setPlayers] = useState([]);
 
   useEffect(() => {
     loadLeaderboard();
@@ -13,7 +12,6 @@ export default function Leaderboard() {
 
   const loadLeaderboard = async () => {
     const data = await getLeaderboard();
-    console.log('Leaderboard data:', data);
     setPlayers(data);
   };
 
