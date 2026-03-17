@@ -14,7 +14,6 @@ class TournamentController extends Controller
     public function show($id)
     {
         return Tournament::with([
-
             'players.player'
         ])
             ->findOrFail($id);

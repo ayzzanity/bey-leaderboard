@@ -1,0 +1,33 @@
+{
+  "$schema": "https://getcomposer.org/schema.json",
+  "name": "laravel/laravel",
+  "type": "project",
+  "description": "The skeleton application for the Laravel framework.",
+  "keywords": [
+    "laravel",
+    "framework"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "local": [
+      "Composer\\Config::disableProcessTimeout",
+      "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"cd server &&php artisan serve\" \"cd client && npm run dev\" --names=server,client --kill-others"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "dont-discover": []
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "php-http/discovery": true
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

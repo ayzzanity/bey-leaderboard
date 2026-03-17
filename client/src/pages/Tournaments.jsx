@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from 'antd';
+import { Button, Card } from 'antd';
 
 import { getTournaments } from '../api/api';
 
@@ -19,16 +19,16 @@ export default function Tournaments() {
   };
 
   return (
-    <div className="container">
-      <div className="flex justify-between items-center mx-2">
-        <h1>Tournaments</h1>
+    <Card title="Tournaments">
+      <div className="container">
+        <div className="flex justify-end items-center m-2">
+          <Link to="/admin/import">
+            <Button>Import Tournament</Button>
+          </Link>
+        </div>
 
-        <Link to="/admin/import">
-          <Button>Import Tournament</Button>
-        </Link>
+        {tournaments.length === 0 ? <p>No tournaments imported yet.</p> : <TournamentList tournaments={tournaments} />}
       </div>
-
-      {tournaments.length === 0 ? <p>No tournaments imported yet.</p> : <TournamentList tournaments={tournaments} />}
-    </div>
+    </Card>
   );
 }

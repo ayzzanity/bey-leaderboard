@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Card } from 'antd';
 import { getLeaderboard } from '../api/api';
 
 import { LeaderboardTable } from '../components';
@@ -16,10 +17,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="container">
-      <h1>Global Leaderboard</h1>
-
+    <Card title="Global Leaderboard">
       <LeaderboardTable players={players} />
-    </div>
+    </Card>
   );
 }

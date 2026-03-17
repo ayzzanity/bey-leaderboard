@@ -1,28 +1,33 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, Layout, theme } from 'antd';
 
 import { Dashboard, Leaderboard, Tournaments, TournamentStandings, ImportTournament } from './pages';
 import { Navbar } from './components';
+import { useBootstrapTheme } from './config/themes';
+
+const { Header, Content, Footer } = Layout;
 
 function App() {
+  const configProps = useBootstrapTheme();
+
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.darkAlgorithm
-      }}
-    >
+    <ConfigProvider {...configProps}>
       <BrowserRouter>
-        <Navbar />
+        <Header style={{ display: 'flex', alignItems: 'center', justifyItems: 'space-between' }}>
+          <div className="demo-logo" />
+          <Navbar />
+        </Header>
+        <Content style={{ padding: '0 48px' }}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
 
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/tournaments" element={<Tournaments />} />
+            <Route path="/tournaments/:id" element={<TournamentStandings />} />
 
-          <Route path="/tournaments" element={<Tournaments />} />
-          <Route path="/tournaments/:id" element={<TournamentStandings />} />
-
-          <Route path="/admin/import" element={<ImportTournament />} />
-        </Routes>
+            <Route path="/admin/import" element={<ImportTournament />} />
+          </Routes>
+        </Content>
       </BrowserRouter>
     </ConfigProvider>
   );
