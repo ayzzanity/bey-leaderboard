@@ -11,7 +11,7 @@ export default function TournamentList({ tournaments }) {
         { title: 'Date', dataIndex: 'date' },
         {
           title: 'Action',
-          render: (_, row) => <Link to={`/standings/${row.id}`}>View</Link>
+          render: (_, row) => <Link to={`/tournaments/${row.id}`}>View</Link>
         }
       ]}
     />
