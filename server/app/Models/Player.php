@@ -17,4 +17,19 @@ class Player extends Model
     {
         return $this->hasOne(PlayerStat::class);
     }
+
+    public function aliases()
+    {
+        return $this->hasMany(PlayerAlias::class);
+    }
+
+    public function tournamentPlayers()
+    {
+        return $this->hasMany(TournamentPlayer::class);
+    }
+
+    public function tournamentResults()
+    {
+        return $this->hasMany(TournamentResult::class);
+    }
 }

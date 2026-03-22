@@ -18,19 +18,38 @@ class SwissService
 
         $wins = [];
         $played = [];
+        $pointsScored = [];
+        $pointsAllowed = [];
+        $opponents = [];
 
-        // Step 1: calculate wins and matches played
         foreach ($matches as $match) {
+            $winnerId = $match->winner_id;
+            $player1Id = $match->player1_id;
+            $player2Id = $match->player2_id;
 
-            $wins[$match->winner_id] = ($wins[$match->winner_id] ?? 0) + 1;
+            if ($winnerId !== null) {
+                $wins[$winnerId] = ($wins[$winnerId] ?? 0) + 1;
+            }
 
-            $played[$match->player1_id] = ($played[$match->player1_id] ?? 0) + 1;
-            $played[$match->player2_id] = ($played[$match->player2_id] ?? 0) + 1;
+            if ($player1Id !== null) {
+                $played[$player1Id] = ($played[$player1Id] ?? 0) + 1;
+                $pointsScored[$player1Id] = ($pointsScored[$player1Id] ?? 0) + ($match->player1_score ?? 0);
+                $pointsAllowed[$player1Id] = ($pointsAllowed[$player1Id] ?? 0) + ($match->player2_score ?? 0);
+            }
+
+            if ($player2Id !== null) {
+                $played[$player2Id] = ($played[$player2Id] ?? 0) + 1;
+                $pointsScored[$player2Id] = ($pointsScored[$player2Id] ?? 0) + ($match->player2_score ?? 0);
+                $pointsAllowed[$player2Id] = ($pointsAllowed[$player2Id] ?? 0) + ($match->player1_score ?? 0);
+            }
+
+            if ($player1Id !== null && $player2Id !== null) {
+                $opponents[$player1Id][] = $player2Id;
+                $opponents[$player2Id][] = $player1Id;
+            }
         }
 
-        // Apply win/loss stats
         foreach ($players as $player) {
-
             $playerWins = $wins[$player->player_id] ?? 0;
             $playerPlayed = $played[$player->player_id] ?? 0;
 
@@ -38,43 +57,87 @@ class SwissService
             $player->swiss_losses = $playerPlayed - $playerWins;
         }
 
-        // Step 2: calculate Buchholz
+        $tbScores = [];
+
         foreach ($players as $player) {
+            $opponentScores = collect($opponents[$player->player_id] ?? [])
+                ->map(fn ($opponentId) => $wins[$opponentId] ?? 0)
+                ->sort()
+                ->values();
 
-            $playerMatches = $matches->filter(function ($match) use ($player) {
-                return $match->player1_id == $player->player_id ||
-                    $match->player2_id == $player->player_id;
-            });
-
-            $buchholz = 0;
-
-            foreach ($playerMatches as $match) {
-
-                $opponentId = $match->player1_id == $player->player_id
-                    ? $match->player2_id
-                    : $match->player1_id;
-
-                if ($opponentId && isset($players[$opponentId])) {
-                    $buchholz += $players[$opponentId]->swiss_wins ?? 0;
-                }
+            if ($opponentScores->count() > 2) {
+                $opponentScores = $opponentScores->slice(1, $opponentScores->count() - 2)->values();
             }
 
-            $player->buchholz_score = $buchholz;
+            $player->buchholz_score = $opponentScores->sum();
+            $tbScores[$player->player_id] = $this->calculateTieBreaker($player->player_id, $matches, $players);
         }
 
-        // Step 3: ranking
-        $ranked = $players->sortByDesc('buchholz_score')
-            ->sortByDesc('swiss_wins')
-            ->values();
+        $ranked = $players->sort(function ($left, $right) use ($pointsScored, $tbScores) {
+            $leftScore = (float) ($left->swiss_wins ?? 0);
+            $rightScore = (float) ($right->swiss_wins ?? 0);
+            $leftTb = $tbScores[$left->player_id] ?? 0;
+            $rightTb = $tbScores[$right->player_id] ?? 0;
+            $leftPts = $pointsScored[$left->player_id] ?? 0;
+            $rightPts = $pointsScored[$right->player_id] ?? 0;
+
+            return [
+                $rightScore,
+                $rightTb,
+                $rightPts,
+                $right->buchholz_score,
+                $left->seed ?? PHP_INT_MAX,
+                $left->player_id,
+            ] <=> [
+                $leftScore,
+                $leftTb,
+                $leftPts,
+                $left->buchholz_score,
+                $right->seed ?? PHP_INT_MAX,
+                $right->player_id,
+            ];
+        })->values();
 
         $rank = 1;
 
         foreach ($ranked as $player) {
-
             $player->swiss_rank = $rank;
             $player->save();
-
             $rank++;
         }
+    }
+
+    private function calculateTieBreaker(int $playerId, $matches, $players): int
+    {
+        $player = $players[$playerId] ?? null;
+
+        if ($player === null) {
+            return 0;
+        }
+
+        $tbWins = 0;
+
+        foreach ($matches as $match) {
+            $isParticipant = $match->player1_id === $playerId || $match->player2_id === $playerId;
+            if (!$isParticipant || $match->winner_id !== $playerId) {
+                continue;
+            }
+
+            $opponentId = $match->player1_id === $playerId ? $match->player2_id : $match->player1_id;
+            $opponent = $opponentId !== null ? ($players[$opponentId] ?? null) : null;
+
+            if ($opponent === null) {
+                continue;
+            }
+
+            if (
+                (int) $opponent->swiss_wins === (int) $player->swiss_wins &&
+                (int) $opponent->swiss_losses === (int) $player->swiss_losses
+            ) {
+                $tbWins++;
+            }
+        }
+
+        return $tbWins;
     }
 }

@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ConfigProvider, Layout, theme } from 'antd';
+import { ConfigProvider, Layout } from 'antd';
 
-import { Dashboard, Leaderboard, Tournaments, TournamentStandings, ImportTournament } from './pages';
+import { Dashboard, Leaderboard, PlayerProfile, Tournaments, TournamentStandings, ImportTournament } from './pages';
 import { Navbar } from './components';
 import { useBootstrapTheme } from './config/themes';
 
-const { Header, Content, Footer } = Layout;
+const { Header, Content } = Layout;
 
 function App() {
   const configProps = useBootstrapTheme();
@@ -21,6 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/players/:id" element={<PlayerProfile />} />
 
             <Route path="/tournaments" element={<Tournaments />} />
             <Route path="/tournaments/:id" element={<TournamentStandings />} />

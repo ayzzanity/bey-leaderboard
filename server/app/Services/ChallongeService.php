@@ -15,7 +15,7 @@ class ChallongeService
 
     public function getTournament($slug)
     {
-        return Http::get(
+        return Http::connectTimeout(10)->timeout(30)->get(
             "https://api.challonge.com/v1/tournaments/$slug.json",
             [
                 'api_key' => $this->apiKey
@@ -25,7 +25,7 @@ class ChallongeService
 
     public function getParticipants($slug)
     {
-        return Http::get(
+        return Http::connectTimeout(10)->timeout(30)->get(
             "https://api.challonge.com/v1/tournaments/$slug/participants.json",
             [
                 'api_key' => $this->apiKey
@@ -35,7 +35,7 @@ class ChallongeService
 
     public function getMatches($slug)
     {
-        return Http::get(
+        return Http::connectTimeout(10)->timeout(30)->get(
             "https://api.challonge.com/v1/tournaments/$slug/matches.json",
             [
                 'api_key' => $this->apiKey

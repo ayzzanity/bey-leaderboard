@@ -9,6 +9,8 @@ class Tournament extends Model
     //
     protected $fillable = [
         'name',
+        'age_category',
+        'event_type',
         'challonge_id',
         'challonge_url',
         'challonge_slug',

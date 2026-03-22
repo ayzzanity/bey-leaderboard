@@ -9,7 +9,13 @@ class TournamentPlayer extends Model
     protected $fillable = [
         'tournament_id',
         'player_id',
-        'final_rank'
+        'imported_name',
+        'seed',
+        'final_rank',
+        'swiss_wins',
+        'swiss_losses',
+        'swiss_rank',
+        'buchholz_score',
     ];
 
     public function tournament()

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Table } from 'antd';
 
 export default function LeaderboardTable({ players }) {
@@ -6,7 +7,10 @@ export default function LeaderboardTable({ players }) {
       dataSource={players}
       columns={[
         { title: 'Rank', dataIndex: 'rank' },
-        { title: 'Player', dataIndex: 'name' },
+        {
+          title: 'Player',
+          render: (_, record) => <Link to={`/players/${record.player_id}`}>{record.name}</Link>
+        },
         { title: 'Points', dataIndex: 'points' },
         { title: 'Tournaments', dataIndex: 'tournaments' }
       ]}

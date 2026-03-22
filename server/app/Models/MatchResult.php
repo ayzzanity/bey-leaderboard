@@ -11,6 +11,8 @@ class MatchResult extends Model
         'player1_id',
         'player2_id',
         'winner_id',
+        'player1_score',
+        'player2_score',
         'round',
         'stage'
     ];
